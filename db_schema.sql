@@ -47,3 +47,23 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 CREATE INDEX IF NOT EXISTS idx_transactions_wallet_id   ON transactions(wallet_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_created_at  ON transactions(created_at);
+
+-- -------------------------------------------------------------
+-- DATABASE: notification
+-- -------------------------------------------------------------
+
+\c notification;
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id          BIGSERIAL       PRIMARY KEY,
+    account_id  BIGINT          NOT NULL,
+    type        VARCHAR(50)     NOT NULL
+                                CHECK (type IN ('TRANSACTION', 'ACCOUNT', 'SYSTEM')),
+    title       VARCHAR(255)    NOT NULL,
+    message     TEXT            NOT NULL,
+    is_read     BOOLEAN         NOT NULL DEFAULT FALSE,
+    created_at  TIMESTAMP       NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_account_id ON notifications(account_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at);

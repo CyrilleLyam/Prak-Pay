@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: notificate-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/notification
+    username: postgres
+    password: Xk7mN9vpQL2nRw4j
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
