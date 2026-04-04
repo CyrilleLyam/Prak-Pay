@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kafka
+  namespace: kafka
+  labels:
+    app: kafka
+spec:
+  serviceName: kafka-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka
+  template:
+    metadata:
+      labels:
+        app: kafka
+    spec:
+      enableServiceLinks: false
+
+      initContainers:
+        - name: kafka-init
+          image: confluentinc/cp-kafka:7.7.0
+          command:
+            - bash
+            - -c
+            - |
+              STORAGE_DIR=/var/lib/kafka/data
+              CLUSTER_ID_FILE=$STORAGE_DIR/.cluster_id
+
+              if [ -f "$CLUSTER_ID_FILE" ]; then
+                CLUSTER_ID=$(cat "$CLUSTER_ID_FILE")
+                echo "Reusing existing cluster ID: $CLUSTER_ID"
+              else
+                CLUSTER_ID=$(kafka-storage random-uuid)
+                echo "Generated new cluster ID: $CLUSTER_ID"
+              fi
+
+              if [ ! -f "$STORAGE_DIR/meta.properties" ]; then
+                echo "Formatting Kafka storage..."
+                kafka-storage format \
+                  --config /tmp/kafka-init.properties \
+                  --cluster-id "$CLUSTER_ID" \
+                  --ignore-formatted
+                echo "$CLUSTER_ID" > "$CLUSTER_ID_FILE"
+                echo "Storage formatted successfully."
+              else
+                echo "Storage already formatted, skipping."
+              fi
+          env:
+            - name: CLUSTER_ID
+              value: "Z9gtZ3omQbOdiL7d58qO5A"
+            - name: KAFKA_NODE_ID
+              value: "1"
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+            - name: kafka-init-config
+              mountPath: /tmp/kafka-init.properties
+              subPath: kafka-init.properties
+
+      containers:
+        - name: kafka
+          image: confluentinc/cp-kafka:7.7.0
+          ports:
+            - containerPort: 9092
+              name: broker
+            - containerPort: 9093
+              name: controller
+          env:
+            - name: CLUSTER_ID
+              value: "Z9gtZ3omQbOdiL7d58qO5A"
+            - name: KAFKA_NODE_ID
+              value: "1"
+            - name: KAFKA_PROCESS_ROLES
+              value: "broker,controller"
+            - name: KAFKA_CONTROLLER_QUORUM_VOTERS
+              value: "1@kafka-0.kafka-headless.kafka.svc.cluster.local:9093"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "PLAINTEXT"
+            - name: KAFKA_CONTROLLER_LISTENER_NAMES
+              value: "CONTROLLER"
+            - name: KAFKA_LISTENERS
+              value: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://kafka:9092"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
+              value: "0"
+            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: KAFKA_DELETE_TOPIC_ENABLE
+              value: "true"
+            - name: KAFKA_LOG_RETENTION_HOURS
+              value: "168"
+            - name: KAFKA_NUM_PARTITIONS
+              value: "3"
+            - name: KAFKA_LOG_DIRS
+              value: "/var/lib/kafka/data"
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 9092
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: kafka-data
+              mountPath: /var/lib/kafka/data
+
+      volumes:
+        - name: kafka-init-config
+          configMap:
+            name: kafka-init-config
+
+  volumeClaimTemplates:
+    - metadata:
+        name: kafka-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 20Gi
