@@ -1,0 +1,12 @@
+{
+  "namespace": "com.seanglay.events",
+  "type": "record",
+  "name": "AccountRegisteredEvent",
+  "fields": [
+    { "name": "account_id",    "type": "string" },
+    { "name": "name",          "type": "string" },
+    { "name": "email",         "type": "string" },
+    { "name": "registered_at", "type": { "type": "long", "logicalType": "timestamp-millis" } }
+  ]
+}
+

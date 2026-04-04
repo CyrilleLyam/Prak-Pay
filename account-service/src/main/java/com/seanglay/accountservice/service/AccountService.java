@@ -4,6 +4,7 @@ import com.seanglay.accountservice.dto.AccountResponseDto;
 import com.seanglay.accountservice.dto.CreateLoginRequestDto;
 import com.seanglay.accountservice.dto.CreateRegisterRequestDto;
 import com.seanglay.accountservice.dto.LoginResponseDto;
+import com.seanglay.accountservice.event.AccountEventProducer;
 import com.seanglay.accountservice.mapper.AccountMapper;
 import com.seanglay.accountservice.model.Account;
 import com.seanglay.accountservice.repository.AccountRepository;
@@ -21,11 +22,16 @@ public class AccountService {
     private final AccountMapper accountMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AccountEventProducer accountEventProducer;
 
     public AccountResponseDto register(CreateRegisterRequestDto dto) {
         Account account = accountMapper.toEntity(dto);
         account.setPassword(passwordEncoder.encode(dto.getPassword()));
-        return accountMapper.toResponse(accountRepository.save(account));
+        Account saved = accountRepository.save(account);
+
+        accountEventProducer.publishRegistered(accountMapper.toRegisteredEvent(saved));
+
+        return accountMapper.toResponse(saved);
     }
 
     public LoginResponseDto login(CreateLoginRequestDto dto) {
@@ -34,6 +40,8 @@ public class AccountService {
         if (!passwordEncoder.matches(dto.getPassword(), account.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
+
+        accountEventProducer.publishLoggedIn(accountMapper.toLoggedInEvent(account));
 
         return LoginResponseDto.builder().accessToken(jwtService.generateAccessToken(account.getId(), account.getEmail())).accessTokenExpiredAt(jwtService.getAccessTokenExpiry()).build();
     }

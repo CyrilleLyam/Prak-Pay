@@ -1,0 +1,2 @@
+com.seanglay.kafka.config.KafkaProducerAutoConfig
+com.seanglay.kafka.config.KafkaConsumerAutoConfig
