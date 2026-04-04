@@ -5,10 +5,18 @@ spring:
   application:
     name: notification-service
   datasource:
-    url: jdbc:postgresql://localhost:5433/notification
-    username: postgres
-    password: Xk7mN9vpQL2nRw4j
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/notification
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:Xk7mN9vpQL2nRw4j}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: notification-pool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+      keepalive-time: 60000
   kafka:
     bootstrap-servers: localhost:9092
     topic:
@@ -24,7 +32,7 @@ spring:
         specific.avro.reader: true
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:

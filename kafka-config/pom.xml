@@ -19,6 +19,13 @@
         <repository>
             <id>confluent</id>
             <url>https://packages.confluent.io/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 

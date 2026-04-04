@@ -5,16 +5,18 @@ spring:
   application:
     name: account-service
   datasource:
-    url: jdbc:postgresql://localhost:5433/account
-    username: postgres
-    password: Xk7mN9vpQL2nRw4j
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/account
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:Xk7mN9vpQL2nRw4j}
     driver-class-name: org.postgresql.Driver
     hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
+      pool-name: account-pool
+      maximum-pool-size: 10
+      minimum-idle: 2
       idle-timeout: 300000
       connection-timeout: 20000
       max-lifetime: 1800000
+      keepalive-time: 60000
   security:
     jwt:
       access-token-expiration: 86400
