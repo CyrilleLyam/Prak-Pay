@@ -81,6 +81,8 @@
                     <subjects>
                         <account.registered-value>${project.basedir}/src/main/avro/account-registered.avsc</account.registered-value>
                         <account.logged-in-value>${project.basedir}/src/main/avro/account-logged-in.avsc</account.logged-in-value>
+                        <wallet.created-value>${project.basedir}/src/main/avro/wallet-created.avsc</wallet.created-value>
+                        <transaction.created-value>${project.basedir}/src/main/avro/transaction-created.avsc</transaction.created-value>
                     </subjects>
                 </configuration>
             </plugin>

@@ -22,6 +22,8 @@ spring:
     topic:
       registered: account.registered
       logged-in: account.logged-in
+      wallet-created: wallet-created
+      transaction-created: transaction-created
     consumer:
       group-id: notification-service-group
       auto-offset-reset: earliest

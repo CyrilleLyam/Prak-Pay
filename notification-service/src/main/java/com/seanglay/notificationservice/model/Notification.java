@@ -64,6 +64,9 @@ public class Notification extends BaseEntity {
         // Account events
         ACCOUNT_REGISTERED, ACCOUNT_LOGGED_IN,
 
+        // Wallet events
+        WALLET_CREATED,
+
         // Transaction events
         DEPOSIT, WITHDRAWAL, TRANSFER_SENT, TRANSFER_RECEIVED, PAYMENT,
 

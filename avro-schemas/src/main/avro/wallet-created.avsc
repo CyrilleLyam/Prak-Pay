@@ -1,0 +1,10 @@
+{
+  "namespace": "com.seanglay.events",
+  "type": "record",
+  "name": "WalletCreatedEvent",
+  "fields": [
+    { "name": "wallet_id",   "type": "string" },
+    { "name": "account_id",  "type": "string" },
+    { "name": "created_at",  "type": { "type": "long", "logicalType": "timestamp-millis" } }
+  ]
+}

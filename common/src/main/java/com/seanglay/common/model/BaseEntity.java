@@ -22,4 +22,6 @@ public abstract class BaseEntity {
 
     @UpdateTimestamp
     private Instant updatedAt;
+
+    private Instant deletedAt;
 }

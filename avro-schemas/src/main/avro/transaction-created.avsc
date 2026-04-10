@@ -1,0 +1,13 @@
+{
+  "namespace": "com.seanglay.events",
+  "type": "record",
+  "name": "TransactionCreatedEvent",
+  "fields": [
+    { "name": "transaction_id",      "type": "string" },
+    { "name": "wallet_id",           "type": "string" },
+    { "name": "type",                "type": { "type": "enum", "name": "TransactionType", "symbols": ["DEPOSIT", "WITHDRAW", "TRANSFER_IN", "TRANSFER_OUT"] } },
+    { "name": "amount",              "type": { "type": "bytes", "logicalType": "decimal", "precision": 19, "scale": 2 } },
+    { "name": "related_wallet_id",   "type": ["null", "string"], "default": null },
+    { "name": "created_at",          "type": { "type": "long", "logicalType": "timestamp-millis" } }
+  ]
+}

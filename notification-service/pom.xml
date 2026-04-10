@@ -149,6 +149,8 @@
 					</schemaRegistryUrls>
 					<subjectPatterns>
 						<param>account\..*</param>
+						<param>wallet\..*</param>
+						<param>transaction\..*</param>
 					</subjectPatterns>
 					<outputDirectory>${project.build.directory}/schemas</outputDirectory>
 				</configuration>
