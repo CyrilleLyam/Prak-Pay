@@ -19,6 +19,7 @@ import lombok.Setter;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,13 +39,12 @@ public class Notification extends BaseEntity {
     @Column(nullable = false)
     private UUID accountId;
 
-    @Column(nullable = false)
     private String email;
 
     @Column(nullable = false)
     private String message;
 
-    private java.math.BigDecimal amount;
+    private BigDecimal amount;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
