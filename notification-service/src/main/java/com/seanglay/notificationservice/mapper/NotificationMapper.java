@@ -2,11 +2,15 @@ package com.seanglay.notificationservice.mapper;
 
 import com.seanglay.events.AccountLoggedInEvent;
 import com.seanglay.events.AccountRegisteredEvent;
+import com.seanglay.events.TransactionCreatedEvent;
 import com.seanglay.events.WalletCreatedEvent;
 import com.seanglay.notificationservice.model.Notification;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,6 +50,43 @@ public interface NotificationMapper {
     @Mapping(target = "message", expression = "java(\"Your wallet has been successfully created.\")")
     @Mapping(target = "metadata", expression = "java(metadata(\"walletId\", event.getWalletId()))")
     Notification toNotification(WalletCreatedEvent event);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "email", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "accountId", expression = "java(java.util.UUID.fromString(event.getAccountId()))")
+    @Mapping(target = "type", expression = "java(resolveTransactionType(event.getType()))")
+    @Mapping(target = "amount", expression = "java(toDecimal(event.getAmount()))")
+    @Mapping(target = "message", expression = "java(resolveTransactionMessage(event))")
+    @Mapping(target = "metadata", expression = "java(metadata(\"transactionId\", event.getTransactionId()))")
+    Notification toNotification(TransactionCreatedEvent event);
+
+    default Notification.NotificationType resolveTransactionType(com.seanglay.events.TransactionType type) {
+        return switch (type) {
+            case DEPOSIT -> Notification.NotificationType.DEPOSIT;
+            case WITHDRAW -> Notification.NotificationType.WITHDRAWAL;
+            case TRANSFER_OUT -> Notification.NotificationType.TRANSFER_SENT;
+            case TRANSFER_IN -> Notification.NotificationType.TRANSFER_RECEIVED;
+        };
+    }
+
+    default String resolveTransactionMessage(TransactionCreatedEvent event) {
+        BigDecimal amount = toDecimal(event.getAmount());
+        return switch (event.getType()) {
+            case DEPOSIT -> "Your wallet has been credited with " + amount + ".";
+            case WITHDRAW -> "Your wallet has been debited with " + amount + ".";
+            case TRANSFER_OUT -> "You sent " + amount + " to another wallet.";
+            case TRANSFER_IN -> "You received " + amount + " from another wallet.";
+        };
+    }
+
+    default BigDecimal toDecimal(ByteBuffer buffer) {
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.duplicate().get(bytes);
+        return new BigDecimal(new BigInteger(bytes), 2);
+    }
 
     default Map<String, Object> metadata(String key, Object value) {
         Map<String, Object> map = new HashMap<>();

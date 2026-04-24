@@ -17,9 +17,17 @@ public class KafkaConfig {
     @Value("${spring.kafka.topic.wallet-created}")
     private String walletCreatedTopic;
 
+    @Value("${spring.kafka.topic.transaction-created}")
+    private String transactionCreatedTopic;
+
     @Bean
-    public NewTopic registeredTopic() {
+    public NewTopic walletCreatedTopic() {
         return TopicBuilder.name(walletCreatedTopic).partitions(partitions).replicas(replicationFactor).build();
+    }
+
+    @Bean
+    public NewTopic transactionCreatedTopic() {
+        return TopicBuilder.name(transactionCreatedTopic).partitions(partitions).replicas(replicationFactor).build();
     }
 
 }
